@@ -10,9 +10,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class KubernetesInstaller {
+public class KubernetesRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesInstaller.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KubernetesRunner.class);
 
     @Inject
     KubernetesClient client;
@@ -20,7 +20,7 @@ public class KubernetesInstaller {
     public int install() {
 
         String kafkaNamespace = System.getenv("KAFKA_NAMESPACE");
-        String kafkaClientConnectionSecret = getEnv("Kafka_CLIENT_CONNECTION_SECRET", "kafka-client-secret");
+        String kafkaClientConnectionSecret = System.getenv().getOrDefault("Kafka_CLIENT_CONNECTION_SECRET", "kafka-client-secret");
         if (kafkaNamespace == null || kafkaNamespace.isBlank()) {
             LOGGER.error("Environment variable 'KAFKA_NAMESPACE' for kafka namespace not set. Exiting...");
             return -1;
@@ -41,15 +41,10 @@ public class KubernetesInstaller {
         Secret newSecret = new SecretBuilder().withNewMetadata().withName(kafkaClientConnectionSecret).endMetadata()
                 .addToData(clientConnectionSecret.getData()).build();
         client.secrets().inNamespace(namespace).resource(newSecret).createOrReplace();
-        return 0;
-    }
 
-    private String getEnv(String name, String defaultVal) {
-        String env = System.getenv(name);
-        if (env == null) {
-            return defaultVal;
-        }
-        return env;
+        LOGGER.info("Secret " + kafkaClientConnectionSecret + " created in namespace " + namespace + ". Exiting");
+
+        return 0;
     }
 
 }

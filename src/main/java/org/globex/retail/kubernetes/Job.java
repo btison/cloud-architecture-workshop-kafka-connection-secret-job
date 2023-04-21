@@ -6,10 +6,10 @@ import io.quarkus.runtime.annotations.QuarkusMain;
 import javax.inject.Inject;
 
 @QuarkusMain
-public class InstallCommand implements QuarkusApplication {
+public class Job implements QuarkusApplication {
 
     @Inject
-    KubernetesInstaller installer;
+    KubernetesRunner installer;
 
     @Override
     public int run(String... args) throws Exception {
